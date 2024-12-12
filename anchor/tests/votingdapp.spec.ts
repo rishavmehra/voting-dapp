@@ -11,15 +11,24 @@ const votingdappAddress = new PublicKey("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewy
 
 describe('votingdapp', () => {
 
-  it('Initialize poll', async () => {
-    const context = await startAnchor("", [{name:"votingdapp", programId: votingdappAddress }], []);
-    const provider = new BankrunProvider(context);
+  let context;
+  let provider;
+  // @ts-ignore
+  let votingdappProgram;
+
+  beforeAll(async()=>{
+    context = await startAnchor("", [{name:"votingdapp", programId: votingdappAddress }], []);
+    provider = new BankrunProvider(context);
     
-    const votingdappProgram = new Program<Votingdapp>(
+    votingdappProgram = new Program<Votingdapp>(
       IDL,
       provider,
-    );  
+    );
 
+  })
+
+  it('Initialize poll', async () => {
+  // @ts-ignore    
     await votingdappProgram.methods.initializePool(
       new anchor.BN(5),
       "what is you favorite type of peaunt buffer?",
@@ -32,22 +41,48 @@ describe('votingdapp', () => {
       votingdappAddress
     )
 
-    // console.log("this is the best", [new anchor.BN(5).toArrayLike(Buffer, "le", 8)]);
-    
-
-    // console.log(polladdress);
-    
-
+      // @ts-ignore
     const poll = await votingdappProgram.account.poll.fetch(polladdress);
-
-  //  console.log(poll);
-
-
     expect(poll.pollId.toNumber()).toEqual(5)
     expect(poll.description).toEqual("what is you favorite type of peaunt buffer?")
     expect(poll.pollStart.toNumber()).toBeLessThan(poll.pollEnd.toNumber())
     expect(poll.pollEnd.toNumber()).toEqual(1833923812)
     expect(poll.candidateAmount.toNumber()).toEqual(0)
-  })
+  });
 
+  it('initialize candidate', async()=>{
+      // @ts-ignore
+    await votingdappProgram.methods.initializeCandidate(
+      "peaunt butter smooth",
+      new anchor.BN(5)
+    ).rpc();
+    // @ts-ignore
+    await votingdappProgram.methods.initializeCandidate(
+      "peaunt butter crunchy",
+      new anchor.BN(5)
+    ).rpc();
+
+    const [smoothAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(5).toArrayLike(Buffer, "le", 8), Buffer.from("peaunt butter smooth")],
+      votingdappAddress
+    )
+
+    // @ts-ignore
+    const smoothCandidate = await votingdappProgram.account.candidate.fetch(smoothAddress);
+    console.log(smoothCandidate);
+    expect(smoothCandidate.candidateVotes.toNumber()).toEqual(0)
+
+    const [crunchyAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(5).toArrayLike(Buffer, "le", 8), Buffer.from("peaunt butter smooth")],
+      votingdappAddress
+    )  
+
+    // @ts-ignore
+    const crunchyCandidate = await votingdappProgram.account.candidate.fetch(crunchyAddress);
+    console.log(crunchyCandidate);
+
+    
+
+
+  });
 })
