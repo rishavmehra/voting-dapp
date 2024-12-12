@@ -69,20 +69,33 @@ describe('votingdapp', () => {
 
     // @ts-ignore
     const smoothCandidate = await votingdappProgram.account.candidate.fetch(smoothAddress);
-    console.log(smoothCandidate);
     expect(smoothCandidate.candidateVotes.toNumber()).toEqual(0)
 
     const [crunchyAddress] = PublicKey.findProgramAddressSync(
-      [new anchor.BN(5).toArrayLike(Buffer, "le", 8), Buffer.from("peaunt butter smooth")],
+      [new anchor.BN(5).toArrayLike(Buffer, "le", 8), Buffer.from("peaunt butter crunchy")],
       votingdappAddress
     )  
 
     // @ts-ignore
     const crunchyCandidate = await votingdappProgram.account.candidate.fetch(crunchyAddress);
-    console.log(crunchyCandidate);
-
-    
-
-
+    expect(crunchyCandidate.candidateVotes.toNumber()).toEqual(0)
   });
+
+  it("Voting", async()=>{
+    // @ts-ignore
+    await votingdappProgram.methods.initializeVote(
+      "peaunt butter crunchy",
+      new anchor.BN(5)
+    ).rpc();
+
+    const [crunchyAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(5).toArrayLike(Buffer, "le", 8), Buffer.from("peaunt butter crunchy")],
+      votingdappAddress
+    )
+
+    // @ts-ignore
+    const crunchyCandidate = await votingdappProgram.account.candidate.fetch(crunchyAddress);
+    console.log(crunchyCandidate);
+    expect(crunchyCandidate.candidateVotes.toNumber()).toEqual(1);
+  })
 })

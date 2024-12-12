@@ -6,7 +6,7 @@ declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
 
 #[program]
 pub mod votingdapp {
-  use super::*;
+use super::*;
 
   pub fn initialize_pool(ctx:Context<InitializePoll>, 
                           poll_id: u64,
@@ -27,11 +27,39 @@ pub mod votingdapp {
                               candidate_name: String,                              
                               _poll_id: u64)-> Result<()>{
       let candidate = &mut ctx.accounts.candidate;
+      let poll = &mut ctx.accounts.poll;
+      poll.candidate_amount += 1;
       candidate.candidate_name = candidate_name;
       candidate.candidate_votes = 0;
       Ok(())
   }
 
+
+  pub fn initialize_vote(ctx: Context<InitializeVote>, _candidate_name: String, _poll_id: u64) -> Result<()>{
+    let candidate = &mut ctx.accounts.candidate;
+    candidate.candidate_votes += 1;
+    Ok(())
+  }
+}
+
+#[derive(Accounts)]
+#[instruction(candidate_name:String, poll_id: u64)]
+pub struct InitializeVote<'info>{
+  pub signer: Signer<'info>,
+
+  #[account(
+    seeds = [poll_id.to_le_bytes().as_ref()],
+    bump
+  )]
+  pub pool: Account<'info, Poll>,
+
+
+  #[account(
+    mut,
+    seeds = [poll_id.to_le_bytes().as_ref(), candidate_name.as_bytes()],
+    bump
+  )]
+  pub candidate: Account<'info, Candidate>
 }
 
 #[derive(Accounts)]
@@ -41,6 +69,7 @@ pub struct InitializeCandidate<'info>{
   pub signer: Signer<'info>,
 
   #[account(
+    mut,
     seeds = [poll_id.to_le_bytes().as_ref()],
     bump
   )]
