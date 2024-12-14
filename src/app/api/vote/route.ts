@@ -12,19 +12,19 @@ export async function GET(request: Request) {
   const actionMetadata: ActionGetResponse = {
     icon:"https://m.media-amazon.com/images/I/41CMqFys1xL._SX300_SY300_QL70_FMwebp_.jpg",
     title:"vote for peaunt butter",
-    description:"vote for our favouret peaunt buttfer smooth and crunchy",
+    description:"vote for our favourite peaunt buttfer smooth and crunchy",
     label:"Vote",
     links: {
       actions: [
         // @ts-ignore
         {
-         label: "vote for crunchy", 
+         label: "crunchy", 
          href: "/api/vote?candidate=crunchy",
          type: "transaction"
         },
         // @ts-ignore
         {
-          label: "vote for smooth", 
+          label: "smooth", 
           href: "/api/vote?candidate=smooth",
           type:"transaction"
         },
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
   .instruction()
 
   const blockhash = await connection.getLatestBlockhash();
-  const transaction = new Transaction({
+  const transaction =  new Transaction({
     feePayer: voter,
     blockhash: blockhash.blockhash,
     lastValidBlockHeight: blockhash.lastValidBlockHeight
