@@ -1,31 +1,32 @@
 
-import { ActionGetResponse, ActionPostRequest, ACTIONS_CORS_HEADERS } from "@solana/actions"
-import { Connection, PublicKey } from "@solana/web3.js";
+import { ActionGetResponse, ActionPostRequest, ACTIONS_CORS_HEADERS, createPostResponse } from "@solana/actions"
+import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { Votingdapp } from "@/../anchor/target/types/votingdapp"
 import { BN, Program } from "@coral-xyz/anchor";
 
 const IDL = require("@/../anchor/target/idl/votingdapp.json")
 
-
 export const OPTIONS = GET;
 
 export async function GET(request: Request) {
   const actionMetadata: ActionGetResponse = {
-    icon:"",
+    icon:"https://m.media-amazon.com/images/I/41CMqFys1xL._SX300_SY300_QL70_FMwebp_.jpg",
     title:"vote for peaunt butter",
     description:"vote for our favouret peaunt buttfer smooth and crunchy",
     label:"Vote",
     links: {
       actions: [
+        // @ts-ignore
         {
          label: "vote for crunchy", 
          href: "/api/vote?candidate=crunchy",
-         type:"post",
+         type: "transaction"
         },
+        // @ts-ignore
         {
           label: "vote for smooth", 
           href: "/api/vote?candidate=smooth",
-          type:"post",
+          type:"transaction"
         },
       ]
     }
@@ -60,5 +61,23 @@ export async function POST(request: Request) {
   .accounts({
     signer:voter
   })
-  .instruction
+  .instruction()
+
+  const blockhash = await connection.getLatestBlockhash();
+  const transaction = new Transaction({
+    feePayer: voter,
+    blockhash: blockhash.blockhash,
+    lastValidBlockHeight: blockhash.lastValidBlockHeight
+  // @ts-ignore
+  }).add(instruction);
+
+  const response = await createPostResponse({
+    // @ts-ignore
+    fields:{
+      transaction:transaction
+    }
+  });
+
+  return Response.json(response, {headers: ACTIONS_CORS_HEADERS})
 }
+
