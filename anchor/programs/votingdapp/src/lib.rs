@@ -2,7 +2,7 @@
 
 use anchor_lang::prelude::*;
 
-declare_id!("oYhe6wjJ8gm2MbfCpfBdwbTvCRwVQ1vmTD9SrJBpoL9");
+declare_id!("4VPjcojJXerL8BhoVioHAMssrm9qoKA5aVbBfrkP3JGA");
 
 #[program]
 pub mod votingdapp {
@@ -45,6 +45,7 @@ use super::*;
 #[derive(Accounts)]
 #[instruction(candidate_name:String, poll_id: u64)]
 pub struct InitializeVote<'info>{
+  #[account(mut)]
   pub signer: Signer<'info>,
 
   #[account(
